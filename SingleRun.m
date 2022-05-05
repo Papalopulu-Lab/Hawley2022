@@ -75,7 +75,7 @@ lowerCoupling=1;                   % Keep as 1
 AvM       = 0;                     % Absolute vs moving mean threshold (0=Absolute thresh, 1=Moving mean thresh)
 wl_mins   = 100;                   % Window length in mins to take the moving mean from
 wl        = wl_mins/dt;            % Window length converted to number of vector elements
-S=0.003;                           % Rate of differentiation. Nominal value of 0.003
+S         = 0.003;                 % Rate of differentiation. Nominal value of 0.003
 
 DiffTime_hours=50;                 % Time at which differention can start to occur to allow the system to approach a dynamic equilibrium (hours)
 DiffTime=DiffTime_hours*60/dt;     % Diff time in simulation time steps
@@ -112,8 +112,8 @@ SpatialFourier      = 1;   %Detect significant spatial periodic expression of He
 PerformMFV          = 1;   % Calculate mean field value (degree of synchronisation)
 
 %Visualising HES5 protein levels
-AnimateGrid         = 0;   % Show hexagonal grid with HES5 expression animated
-AnimationSpeed      = 0.6; % Multiplier for speed of animation
+AnimateGrid         = 1;   % Show hexagonal grid with HES5 expression animated
+AnimationSpeed      = 1.5; % Multiplier for speed of animation
 AnimationSubplots   = 0;   % 0=Just Hes levels plot, 1=show swapping, 2=show crude differentiation, 3=Wave/single column visualisation
 ShowRandomCells     = 1;   % Time traces of individual cells
 ShowLastFrame       = 0;   % Shows the last time point in the hexagonal lattice arrangement of cells
@@ -210,7 +210,7 @@ u_m   = log(2)/30; % mRNA half-life of 30min
 u_p   = log(2)/90; % Protein half-life of 90min
 
 %Multicellular parameters (specifies the lateral inhibition Hill function parameters)
-P_ND0 = 4500;      % Lateral inhibition repression threshold (# molecules)
+P_ND0 = 3800;      % Lateral inhibition repression threshold (# molecules)
 n_ND  = 3;         % Lateral inhibition Hill coefficient
 TauND = 0;         % Lateral inhibition time delay (min)
 
@@ -332,7 +332,7 @@ if AnimateGrid==1
     set(gca,'Visible','off')
     set(findall(gca, 'type', 'text'), 'visible', 'on')
     set(gca,'fontsize',15)
-    caxis([min(min(P(:,round(0.2*Nt):end))) 0.9*max(max(P(:,round(0.2*Nt):end)))])
+    caxis([min(min(P(:,round(0.5*Nt):end))) 0.7*max(max(P(:,round(0.5*Nt):end)))])
     xlim([min(min(X_vertices(:))) max(max(X_vertices(:)))])
     ylim([min(min(Y_vertices(:))) max(max(Y_vertices(:)))])
     
@@ -388,7 +388,7 @@ if AnimateGrid==1
 
     end
       
-    startT = 1;
+    startT = Nt/2;
     T_STEP=startT:round(AnimationSpeed*Nt/400):Nt;
     ti=length(T_STEP);
     im=struct([]);
@@ -399,6 +399,7 @@ if AnimateGrid==1
         
         colour_index1=reshape(flipud(vecTOmat(P(:,t_step),cols)),[1,cols*rows])';
         set(hexagons1, 'FaceVertexCData',colour_index1); 
+        title(sprintf('Time: %.0f/%.0f hours',t_step*dt/60, tf/60));
         
         if AnimationSubplots==2
             subplot(121)
@@ -609,31 +610,32 @@ if ShowRandomCells==1
     t_start=1;
     t_start=100*60/dt;
     t_end=120*60/dt;
-    figure(8)
-    clf
-    sgtitle('Individual plots of HES5 abundance')
-    fig=gcf;
-    fig.InvertHardcopy = 'off';
-    
-    
-    for n=1:numPlots
-        
-        subplot(4,6,n) 
-%         plot(T(t_start:end)/60,smoothP(rand_ind(n),t_start:end),'linewidth',0.5,'color',[1 1 1]); hold on
-%         plot(T(t_start:end)/60,smoothP2(rand_ind(n),t_start:end),'linewidth',0.5,'color',[1 1 1]); hold on
-        h11=plot(T(t_start:end)/60,P(rand_ind(n),t_start:end),'linewidth',1); hold on
-        plot([t_start/60,tf_hours],meanPop*ones(1,2),'k--')
-        
-%         plot(T/60,DiffThresh(1,:),'w--','linewidth',1.5)
-        set(h11, {'color'}, num2cell(randColourMapBright(1,[0.2 0.5 0.2]),2));
-        xlabel('Time (hours)')
-        ylabel(sprintf('Hes protein'))
-        set(gca,'FontSize',8)
-        xlim([100,115]);
-%         ylim([ymin ymax]);
-        ylim([0 ymax]);
-    end
-    drawnow
+
+%     figure(8)
+%     clf
+%     sgtitle('Individual plots of HES5 abundance')
+%     fig=gcf;
+%     fig.InvertHardcopy = 'off';
+%     
+%     
+%     for n=1:numPlots
+%         
+%         subplot(4,6,n) 
+% %         plot(T(t_start:end)/60,smoothP(rand_ind(n),t_start:end),'linewidth',0.5,'color',[1 1 1]); hold on
+% %         plot(T(t_start:end)/60,smoothP2(rand_ind(n),t_start:end),'linewidth',0.5,'color',[1 1 1]); hold on
+%         h11=plot(T(t_start:end)/60,P(rand_ind(n),t_start:end),'linewidth',1); hold on
+%         plot([t_start/60,tf_hours],meanPop*ones(1,2),'k--')
+%         
+% %         plot(T/60,DiffThresh(1,:),'w--','linewidth',1.5)
+%         set(h11, {'color'}, num2cell(randColourMapBright(1,[0.2 0.5 0.2]),2));
+%         xlabel('Time (hours)')
+%         ylabel(sprintf('Hes protein'))
+%         set(gca,'FontSize',8)
+%         xlim([100,115]);
+% %         ylim([ymin ymax]);
+%         ylim([0 ymax]);
+%     end
+%     drawnow
     
     
 end
@@ -642,7 +644,7 @@ end
 %%                           Switching Time
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if plotSwitchTime==1 
+if plotSwitchTime==1 && CrudeDiff == 1
 polyOrder=1;
 smoothP2=sgolayfilt(P,polyOrder,165,[],2); %Set to match params used on data (polyorder=1)
 tStart_h=100;
@@ -696,26 +698,7 @@ for cell=1:size(pop,1)
     
 end
 
-% for clust=1:size(popClust,1)
-%     
-%     [B, N, IB]=RunLength_M(popClust(clust,:));%N is the run length, B is the info on directionality, IB gives the element info on where the switch occurs
-%     
-%     B=B(2:end-1); %Removes clipped high and low regions at the start and end of signal
-%     N=N(2:end-1); %Removes clipped high and low regions at the start and end of signal
-%     IB=IB(2:end-1);
-%     hiClust=[hi; N(B==1)];
-%     loClust=[lo; N(B==-1)];
-%     
-%     switchEventsClust(cell,IB(B==1))=1;
-%     switchEventsClust(cell,IB(B==-1))=1;
-%     
-% end
-
 longExposure=diffEvents;
-% figure(331)
-% clf
-% subplot(121)
-% imagesc(longExposure)
 DiffElems=find(diffEvents==1);
 ExpTimeHr=2;
 ExposureTime=ExpTimeHr*60/dt;
@@ -731,30 +714,22 @@ end
 
 switchRateNoProcessing=sum(abs(switchEvents),'all')/(size(switchEvents,2)*dt/60); %Differentiation events per hour
 
-% if CrudeDiff==1
 diffSwitchEvent=find(switchEvents+longExposure==2);
 switchEventsPlot=switchEvents;
 switchEventsPlot(diffSwitchEvent)=2;
 switchEvents(diffSwitchEvent)=0;
-% end
-% subplot(122)
-% imagesc(longExposure)
-
 
 switchRate=sum(abs(switchEvents),'all')/(size(switchEvents,2)*dt/60); %Differentiation events per hour
 fprintf(sprintf('\n Switch rate with not accounting for differentiation reset in single cells = %.2f high/low switch events per hour \n Switch rate with correction = %.2f high/low switch events per hour \n',switchRateNoProcessing, switchRate))
-CoV=std(P(:,tStart:end),[],'all')/mean(P(:,tStart:end),'all')
+CoV=std(P(:,tStart:end),[],'all')/mean(P(:,tStart:end),'all');
 
-
-
-cell=cells/2;
+% cell=cells/2;
 cell=7;
 
 if CrudeDiff==1
 figure(329)
 set(gcf,'renderer','Painters')
 clf
-% aboveMean = popPlot(cell,:);
 adjustSize = length(GAMMA(cell, :)) - length(P(cell,:));
 normalSignalling = find(GAMMA(cell,Nt/2:end-adjustSize)<diffGamma);
 changedSignalling = P(cell,tStart:end);
@@ -801,52 +776,52 @@ legend('High state','Low state', 'Higher transcription rate due to DBP', 'HES5',
 xlabel('Time (h)')
 ylabel('Hes5 abundance')
 end
-%%
- numPlots=20;
-    if numPlots>cells
-        numPlots=cells;
-    end
-    
-    rand_ind=randperm(cells,numPlots);
-    
-    figure(332)
-    clf
-    for n=1:numPlots
-        cell=rand_ind(n);
-      
-        subplot(4,5,n) 
 
-        plot(tNew.*dt./60, P(cell,tStart:end),'w');hold on
-        plot(tNew.*dt./60, popPlot(cell,:),'color',[1 0.2 0.2]); hold on
-        if AvM==0
-        plot([tNew(1)*dt/60 tNew(end)*dt/60], [meanPop meanPop],'k--')
-        elseif AvM==1
-        plot(T((DiffTime+1)/dt:end)/60,DiffThresh(1,(DiffTime+1)/dt:end),'--','color',[1 1 1],'linewidth',1.5); hold on
-        end
+numPlots=20;
+if numPlots>cells
+    numPlots=cells;
+end
 
-        tSelect1=tNew(abs(switchEvents(cell,:))==1);
-        switchSelect=tSelect1*0;
-        tSelect2=tNew(diffEvents(cell,:)==1);
-        diffSelect=tSelect2*0;
-        tSelect3=tNew(switchEventsPlot(cell,:)==2);
-        switchSelect2=tSelect3*0;
+rand_ind=randperm(cells,numPlots);
 
-        plot(tSelect2*dt/60,diffSelect+meanPop,'*','markersize',10,'color',[0.2 1 0.6])
-        plot(tSelect1*dt/60,switchSelect+meanPop,'.','markersize',20,'color',[0.2 0.6 1])
-        plot(tSelect3*dt/60,switchSelect2+meanPop,'o','markersize',7,'color',[0.3 0.7 1])
-      
-        
-        xlim([tNew(1)*dt/60 tNew(end)*dt/60])
-        max1=P(cell,tStart:end);
-        max2=meanPop*1.2;
-        ylim([0 max([max1(:);max2])])
-        xlabel('Time (h)')
-        ylabel('Hes5 abundance')
-        xlim([100 115])
-        
-    end
-    sgtitle('Differentiation and switching events')
-    drawnow
+% figure(332)
+% clf
+% for n=1:numPlots
+%     cell=rand_ind(n);
+%   
+%     subplot(4,5,n) 
+% 
+%     plot(tNew.*dt./60, P(cell,tStart:end),'w');hold on
+%     plot(tNew.*dt./60, popPlot(cell,:),'color',[1 0.2 0.2]); hold on
+%     if AvM==0
+%     plot([tNew(1)*dt/60 tNew(end)*dt/60], [meanPop meanPop],'k--')
+%     elseif AvM==1
+%     plot(T((DiffTime+1)/dt:end)/60,DiffThresh(1,(DiffTime+1)/dt:end),'--','color',[1 1 1],'linewidth',1.5); hold on
+%     end
+% 
+%     tSelect1=tNew(abs(switchEvents(cell,:))==1);
+%     switchSelect=tSelect1*0;
+%     tSelect2=tNew(diffEvents(cell,:)==1);
+%     diffSelect=tSelect2*0;
+%     tSelect3=tNew(switchEventsPlot(cell,:)==2);
+%     switchSelect2=tSelect3*0;
+% 
+%     plot(tSelect2*dt/60,diffSelect+meanPop,'*','markersize',10,'color',[0.2 1 0.6])
+%     plot(tSelect1*dt/60,switchSelect+meanPop,'.','markersize',20,'color',[0.2 0.6 1])
+%     plot(tSelect3*dt/60,switchSelect2+meanPop,'o','markersize',7,'color',[0.3 0.7 1])
+%   
+%     
+%     xlim([tNew(1)*dt/60 tNew(end)*dt/60])
+%     max1=P(cell,tStart:end);
+%     max2=meanPop*1.2;
+%     ylim([0 max([max1(:);max2])])
+%     xlabel('Time (h)')
+%     ylabel('Hes5 abundance')
+%     xlim([100 115])
+%     
+% end
+% sgtitle('Differentiation and switching events')
+% drawnow
 end
 
 %% Switching Time
@@ -863,19 +838,14 @@ pop=pop-meanPop;
 popPlot=pop;
 pop(pop<0)=-1;
 pop(pop>0)=1;
-% imagesc(pop)
 hi=[];
 lo=[];
+
 for i=1:cells
     [B, N, IB]=RunLength_M(pop(i,:));
-%     B=B(2:end-1); %Removes clipped high and low regions at the start and end of signal
-%     N=N(2:end-1); %Removes clipped high and low regions at the start and end of signal
     hi=[hi; N(B==1)];
     lo=[lo; N(B==-1)];
     
-%     figure(12121)
-%     clf
-%     plot(popPlot(i,:))
     alphaHi=sum(N(B==1))/(size(pop,2)); %Proportion of the time spent in high state
     alphaLo=sum(N(B==-1))/(size(pop,2)); %Proportion of the time spent in low state
     DcCells(i)=2*(1-max([alphaHi alphaLo]));
@@ -885,7 +855,6 @@ figure(444)
 clf
 histo=histogram(DcCells,'normalization','probability');
 set(histo,'edgecolor','w');
-% set(histo,'facecolor',[0.9 1 0.7]);
 set(histo,'facecolor',1/255*[50 50 50]);
 title(sprintf('Mean D_C = %.2f', mean(DcCells)))
 xlabel('Dynamicity')
@@ -1022,7 +991,7 @@ if TemporalFourier==1
     sampleCell=size(Y_raw,1);
     
     subplot(321)
-    plot(t./60,Ysmooth(sampleCell,:),'--', 'color','w'); hold on
+    plot(t./60,Ysmooth(sampleCell,:),'--', 'color','k'); hold on
     plot(T(frac*Nt:end)./60,Y_raw(sampleCell,frac*Nt:end),'linewidth',2,'color', [0 0.6 0.6])
     title('Signal with detrend line')
     xlim([dt*Nt*frac/60 dt*Nt/60])
@@ -1030,7 +999,7 @@ if TemporalFourier==1
     set(gca,'Fontsize',txtSize)
     
     subplot(322)
-    plot([t(1)/60 t(end)/60], [0 0],'w'); hold on
+    plot([t(1)/60 t(end)/60], [0 0],'k--'); hold on
     plot(t./60,Ydetrend(sampleCell,:),'color',[0 0.6 0.6],'linewidth',2); 
     xlim([t(1)./60 t(end)./60])
     title('Detrended signal')
@@ -1049,7 +1018,7 @@ if TemporalFourier==1
     subplot(324)
     histo=histogram(ind_per,15,'normalization','probability');
     set(histo,'edgecolor','w');
-    set(histo,'facecolor',[0.9 0.9 0.9]);
+    set(histo,'facecolor',[0.5 0.5 0.5]);
     xlabel('Dominant period (h)')
     ylabel('Num of cells')
     title('Individual cell dominant periods')
@@ -1075,35 +1044,6 @@ if TemporalFourier==1
     
 %__________________________________________________________________________
 %Light mode report version
-    figure(15)
-   set(gcf,'renderer','Painters')
-    clf
-    fig=gcf;
-    fig.InvertHardcopy = 'off';
-    txtSize=11;
-    sampleCell=size(Y_raw,1);
-    
-%     subplot(1,2,1)
-    h1=area(60*f,avgFourier,'LineStyle','none'); hold on;
-    h1.FaceColor=[0 0.6 0.6];
-    h2=area(60*f_C1,P_C1,'LineStyle','none'); hold on;
-    h2.FaceColor=[0.9 0.4 0.4];
-    plot(60*f,avgFourier,'.','linewidth',1,'color',0.3*[1 1 1]); 
-%     plot(60*f(I-ten_percent),avgFourier(I-ten_percent),'ro','linewidth',2)
-%     plot(60*f(I+ten_percent),avgFourier(I+ten_percent),'ro','linewidth',2)
-    plot(60*f(I),avgFourier(I),'.','markersize',20,'color', 0.3*[1 1 1])
-%     title('All cells Fourier transform')
-    xlabel('Frequency (1/h)')
-    xlim([0 0.5])
-    ylim([0 1.2*max(avgFourier)])
-    title({'Average power spectrum', sprintf('Dominant period: %.2f hours   |   Coherence: %.2f', 1./(60*f(I)), coherence)})
-    title({sprintf('Dominant period: %.2f hours   |   Coherence: %.2f', 1./(60*f(I)), coherence)})
-    
-    set(gca,'Fontsize',txtSize)
-    drawnow
-    
-%__________________________________________________________________________
-    
 
     numPlots=24;
     if numPlots>cells
@@ -1114,11 +1054,12 @@ if TemporalFourier==1
 %     rand_ind=rand_ind(1:numPlots);
     
 %     t_start=80*60/dt; %fractional start time in elements
-    t_start=Nt*frac; 
-    t_start_h=dt*Nt*frac/60; %fractional start time in hours
+    t_start = Nt - 50*60/dt; 
+    t_start_h = t_start*dt/60; %fractional start time in hours
 
     figure(8)
     clf
+    sgtitle('Individual cell HES5 plots with detected peak temporal period')
     fig=gcf;
     fig.InvertHardcopy = 'off';
     
@@ -1273,12 +1214,14 @@ if SpatialFourier==1 && cols==1
         j=imagesc(X,Y,plotData);
         xlim([X(1) tf_hours])
         ylabel('Row index')
+        xlabel('Time (h)')
         set(gca,'YTickLabel',[]);
         set(gca,'FontSize',10)
         colormap(gca,map)
         colorbar('Location','westoutside');
         view(0,90)
         set(gca,'fontsize',10)
+        
         
         subplot(1,4,4)
         histData=sum(DiffYNflash,2);
@@ -1288,16 +1231,17 @@ if SpatialFourier==1 && cols==1
         xlim([0.5 rows+0.5])
         set(gca,'XTickLabel',[]);
         set(gca,'fontsize',10)
+        ylabel('Diff event count')
         
         diffSignal=DiffYNflash(:,DiffTime/dt:end);
         indivDiffFreq = sum(diffSignal,2)/(tf_hours-DiffTime_hours);
         
-        figure(302)
-        clf
-        histogram(indivDiffFreq,'facecolor',1/256.*[80 80 80], 'facealpha',1, 'edgecolor','w')
-        xlabel('Events/hour')
-        xlim([0 0.18])
-        title(sprintf('Diff = %.1f %%/h', 100*sum(DiffSignal(:))/((tf_hours-DiffTime_hours)*cells)))
+%         figure(302)
+%         clf
+%         histogram(indivDiffFreq,'facecolor',1/256.*[80 80 80], 'facealpha',1, 'edgecolor','w')
+%         xlabel('Events/hour')
+%         xlim([0 0.18])
+%         title(sprintf('Diff = %.1f %%/h', 100*sum(DiffSignal(:))/((tf_hours-DiffTime_hours)*cells)))
     end
     
 
@@ -1516,72 +1460,8 @@ if SpatialFourier==1 && cols==1
     plotCols=3;
     plotRows=cols/plotCols;
     plotCols=plotCols*2;
+    %% 
     
-%     figure(58) 
-%     clf
-%     fig=gcf;
-%     fig.InvertHardcopy = 'off';
-%     
-%     for n=1:numel(clipStart)
-% 
-%         tClip=t_split(clipStart(n):clipEnd(n));
-%         P1Clip=P1(:,clipStart(n):clipEnd(n));
-%         P1Clip=P1Clip./max(P1Clip,[],'all');
-% 
-%         [FisherPer2,Occurrence2]=Fisher(P1Clip,f);
-%         
-%         subplot(plotRows, plotCols, 2*n-1)
-%         load cmap
-%         colormap(gca,cmap)
-% 
-%         h=surf(tClip,f,P1Clip);
-%     %     xlabel('Time (hours)')
-%     %     ylabel('Frequency (1/cell)')
-% %         title('Spatial Fourier transform over time')
-%         title(sprintf('Occ=%.1f',Occurrence2))
-%         xlim([t_split(1) tf_hours])
-%         ylim([f(1) f(end)])
-%         view(0,90)
-%         colorbar
-%         set(h,'LineStyle','none')
-%         set(gca,'FontSize',8)
-%     %     pbaspect([2 1 1])
-%         colormap(gca,cmap)
-% 
-%         subplot(plotRows, plotCols, 2*n)
-%         [~,maxIdx]=max(mean(P1Clip,2));
-%         plot(mean(P1Clip,2),f,'w')
-%         ylim([f(1) f(end)])
-%     %     title('Mean Fourier transform')
-%     %     title(sprintf('Mean FT. Peak period = %.1f', mean(1./f(maxIdx))))
-%     %     ylabel('Frequency (1/cells)')
-%     %     xlabel('Contribution/power')
-%         pbaspect([0.5 1 1])
-%         set(gca,'FontSize',8)
-%     
-%     end
-%     
-%     figure(57)
-%     clf
-%     for n=1:numel(clipStart)
-% 
-%         tClip=t_split(clipStart(n):clipEnd(n));
-%         P1Clip=P1(:,clipStart(n):clipEnd(n));
-%         P1Clip=P1Clip./max(P1Clip,[],'all');
-% 
-%         [FisherPer3,Occurrence3]=Fisher(P1Clip,f);
-% 
-%         subplot(plotRows, plotCols/2, n)
-%     
-%         plot(tClip,FisherPer3,'.','color',cmap(size(cmap,1)/2,:),'linewidth',2)
-%         title(sprintf('Fisher G significance: %.1f%%', 100*Occurrence3))
-%     %     title('Significant period (Fisher G)')
-%         ylabel('Significant period (cells)')
-%         xlabel('Time (hours)')
-%         set(gca,'FontSize',8)
-%         ylim([0 5])
-%         xlim([tClip(1) tClip(end)])
-%     end
     
     thresh=0.6;
     kymo=KymLong;
@@ -1590,71 +1470,9 @@ if SpatialFourier==1 && cols==1
         vect=kymo(:,i);
         [l(i),p(i)]=microClustDetect(vect,thresh);
     end
-    clusterMean=nanmean(l)
-    clusterOcc=1-sum(isnan(l))/numel(l)
-%     figure(13),histogram(l,'normalization','probability'),ylabel('Frequency/occurence'),xlabel('Cluster size (radius)');
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     figure(56)
-% %     set(gcf,'renderer','Painters')
-%     clf
-%     N=cols-1;
-%    
-%     for n=1:N
-% %     n=2; %column to use for kymo
-%     
-%     subplot(3,N,n)
-%     X=t;
-%     Y=1:rows;
-%     j=surf(X,Y,squeeze(Yraw(:,:,n+1)));
-%     title(sprintf('Kymograph %.f',n+1))
-%     ylim([Y(1) Y(end)])
-%     xlim([t(1) t(end)])
-%     xlabel('Time (hrs)')
-%     ylabel('Row index')
-%     set(j, 'LineStyle','none')
-%     set(gca,'YTickLabel',[]);
-%     set(gca,'FontSize',8)
-%     colormap(gca,vid)
-% %     colorbar
-%     view(0,90)
-%     
-%     tClip=t_split(clipStart(n):clipEnd(n));
-%     P1Clip=P1(:,clipStart(n):clipEnd(n));
-%     P1Clip=P1Clip./max(P1Clip,[],'all');
-% 
-%     [FisherPer4,Occurrence4]=Fisher(P1Clip,f);
-% 
-%     subplot(3,N,n+N)
-%     h=surf(tClip,f,P1Clip);
-%     %     xlabel('Time (hours)')
-%     %     ylabel('Frequency (1/cell)')
-% %         title('Spatial Fourier transform over time')
-%     title(sprintf('Occ=%.1f',Occurrence4))
-%     xlim([t_split(1) tf_hours])
-%     ylim([f(1) f(end)])
-%     view(0,90)
-% %     colorbar
-%     set(h,'LineStyle','none')
-%     set(gca,'FontSize',8)
-%     %     pbaspect([2 1 1])
-%     colormap(gca,cmap)
-%     
-%     
-%     subplot(3,N,n+2*N)
-% 
-%     plot(tClip,FisherPer4,'s','markerSize',3,'MarkerEdgeColor','none', 'MarkerFaceColor',cmap(size(cmap,1)/2,:))
-%     title(sprintf('Significant: %.1f%%', 100*Occurrence4))
-%     ylabel('Significant period (cells)')
-%     xlabel('Time (hours)')
-%     set(gca,'FontSize',8)
-%     ylim([0 5])
-%     xlim([tClip(1) tClip(end)])
-%     
-%     end
+    clusterMean=nanmean(l);
+    clusterOcc=1-sum(isnan(l))/numel(l);
         
-
 end
 
 vid=viridis(500);
@@ -1668,13 +1486,7 @@ if SpatialFourier==1 && cols>1
     
     t=T(time_frac*Nt:end)./60;
     ti=time_frac*Nt;
-%     kymoCols=1;
     [Pnew]=improvedKymo(P,rows,cols,kymoCols); %Improved selection of kymograph
-    
-    
-%     Y_RAW=(P((cols/2-1)*rows+1:cols/2*rows,ti:end)+P(cols/2*rows+1:(cols/2+1)*rows,ti:end))./2;
-
-%     Y_RAW=Pnew(:,ti:end);
     
     kymoWidth=1; %Number of cells to use for kymograph selection width
     K=cols/kymoWidth;
@@ -1685,21 +1497,10 @@ if SpatialFourier==1 && cols>1
     end
     
     figure(23)
-%     set(gcf,'renderer','Painters')
-%     set(gcf,'renderer','opengl');
-    clf
-%     K=cols/2;
-%     if cols/2>6
-%         K=6;
-%     end
-    
+    clf 
     t_concat=t;
     
     for k=2:K %Starts at k=2 because the first column in not included in the analysis (to do with the improvedKymo function)
-%         k=k+1;
-%         Yraw(:,:,k)=(P(2*(k-1)*rows+1:(2*k-1)*rows,ti:end)+P((2*k-1)*rows+1:2*k*rows,ti:end))./2;
-% P((k-1)*rows+1:k*rows,ti:end)
-%         Yraw(:,:,k)=P((k-1)*rows+1:k*rows,ti:end);
 
         Yraw(:,:,k)=Pnew((k-1)*rows+1:k*rows,ti:end);
         
@@ -1712,7 +1513,7 @@ if SpatialFourier==1 && cols>1
         end
             
             
-        subplot(3,4,k)
+        subplot(3,4,k-1)
         
         X=t;
         Y=1:rows;
