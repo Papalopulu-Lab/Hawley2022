@@ -6,6 +6,9 @@
 % Lateral Inhibition Spatial Patterns' (Joshua Hawley, Paul Glendinning, 
 % and Nancy Papalopulu) (2022). Correspondence: joshhawley369@gmail.com
 
+%Required toolboxes: Signal analysis toolbox, statistics and machine
+%learning toolbox.
+
 clear; clc;
 addpath('Functions')
 
@@ -113,7 +116,7 @@ PerformMFV          = 1;   % Calculate mean field value (degree of synchronisati
 
 %Visualising HES5 protein levels
 AnimateGrid         = 1;   % Show hexagonal grid with HES5 expression animated
-AnimationSpeed      = 1.5; % Multiplier for speed of animation
+AnimationSpeed      = 0.9; % Multiplier for speed of animation
 AnimationSubplots   = 0;   % 0=Just Hes levels plot, 1=show swapping, 2=show crude differentiation, 3=Wave/single column visualisation
 ShowRandomCells     = 1;   % Time traces of individual cells
 ShowLastFrame       = 0;   % Shows the last time point in the hexagonal lattice arrangement of cells
@@ -142,7 +145,8 @@ end
 
 %% Model parameters
 %Select a parameter set from the Bayesian inferred single cell parameters 
-%from (Manning et al. 2019) 
+%from (Manning et al. 2019
+%https://www.nature.com/articles/s41467-019-10734-8)
 
 % Columns in accepted_parameters: 1:a_m, 2:a_p, 3:P_H0, 4:TauH, 5:n_H
 load accepted_parameters %Selcted for coherence values between 0.05 and 0.015
@@ -182,8 +186,7 @@ if PlotSummaryStats==1
     ylabel('Coherence')
 end
 
-% Choose single cell parameter set
-
+% Choose single cell parameter set from single cell parameterisation
 AP=accepted_parameters;
 SS=summary_stats;
 

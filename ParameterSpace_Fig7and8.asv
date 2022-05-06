@@ -315,8 +315,8 @@ for hh=1:HH
    
     subplot(1,HH,hh)
     surf(jj_arr,ii_arr,squeeze(pass));
-    sgtitle(sprintf('Spatial Per > %.1f  |  Occurrence > %.1f  |  Dc > %.1f', PerLow, OccLow, DcLow))
-    title({sprintf('F_{pert} = %.1f', hh_arr(hh)) ''});
+    sgtit
+    title({sprintf('Spatial Per > %.1f  |  Occurrence > %.1f  |  Dc > %.1f', PerLow, OccLow, DcLow) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');  
     colormap([BackgroundColour; 1.6*[0/256 95/256 0/256]])
@@ -343,14 +343,14 @@ for hh=1:HH
 
     subplot(2,HH,hh)
     surf(jj_arr,ii_arr,data);
-    title({sprintf('Mean low persistence (h) | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Mean low persistence (h) | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');   
 %     caxis([2 4])
     if hh==1
         ylabel({'Repression','threshold'});
     end
-    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,colourMap);
+    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
     if colbar==1
         colorbar
     end
@@ -359,14 +359,56 @@ for hh=1:HH
     subplot(2,HH,hh+HH)
     surf(jj_arr,ii_arr,data);
 %     title({sprintf('n_{ND}= %.1f',hh_arr(hh)) ''});
-    title({sprintf('Mean high persistence (h) | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Mean high persistence (h) | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');    
     if hh==1
         ylabel({'Repression','threshold'});
     end
-    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,colourMap);
+    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
     if colbar==1
         colorbar
     end
 end
+
+    figure(11)
+
+    data=squeeze(output.diffRate(hh,:,:));
+%         data=[data(1,:); data(1:end-1,:)];
+%         data=[data(:,1), data(:,1:end-1)];
+
+   
+    surf(jj_arr,ii_arr,data);
+    title({sprintf('Diff rate | Diff Signalling= %.1f',hh_arr(hh)) ''});
+    xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
+    xlabel('Distal signalling efficiency');   
+%     caxis([0 100])
+    ylabel({'%/h'});
+
+    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
+    if colbar==1
+        colorbar
+    end
+    
+    
+    
+    
+    figure(12)
+
+    data=squeeze(output.CoV(hh,:,:));
+%         data=[data(1,:); data(1:end-1,:)];
+%         data=[data(:,1), data(:,1:end-1)];
+
+   
+    surf(jj_arr,ii_arr,data);
+    title({sprintf('Coefficient of variation | Diff Signalling= %.1f',hh_arr(hh)) ''});
+    xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
+    xlabel('Distal signalling efficiency');   
+%     caxis([0 100])
+    ylabel({'CoV'});
+
+    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
+    if colbar==1
+        colorbar
+    end
+

@@ -37,8 +37,8 @@ function [output]=processedOutput(p)
     II                    = p.II;
     JJ                    = p.JJ;
     KK                    = p.KK;
-    plotSwitchTime        = p.plotSwitchTime;
-    SpatialFourier        = p.SpatialFourier;
+    plotSwitchTime        = 1;
+    SpatialFourier        = 1;
 
 %% Preallocation for parfor loop
 FisherPer=zeros(HH,II,JJ);
