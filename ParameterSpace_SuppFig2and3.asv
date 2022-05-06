@@ -1,6 +1,6 @@
 % ParameterSpace_Fig7and8.m Multicellular model of autonomous HES5 noisy/oscillatory
 % dynamic coupled between cells by a lateral inhibition Hill function
-% interaction. This code generates the parameter space ouputs in Fig7&8
+% interaction. This code generates the parameter space ouputs in Supplementary Fig2&3
 % in the paper 'Dynamic Switching of Lateral Inhibition Spatial Patterns' 
 % (Joshua Hawley, Paul Glendinning, and Nancy Papalopulu) (2022). 
 % Correspondence: joshhawley369@gmail.com
@@ -11,21 +11,21 @@
 % HOW TO USE THIS CODE
 % To skip generating data (which takes a long time), you can load the
 % workspaces in the location: 
-% Workspaces used to generate figures in paper/Param space output - Figure 7 and 8
+% Workspaces used to generate figures in paper/Param space output for time delay exploration - Supp Figure 2 and 3
 % Once you have opened one of the workspaces, run this first section only so
 % that the Fucntions folder is added, then scroll down to the Plots section
-% (line 185) and run that section to generate the graphs.
+% (line 190ish) and run that section to generate the graphs.
 
 clear;clc;
 addpath('Functions')
 
 %% Define grid size
-rows=26;      % Number of rows of cells in hexagonal grid
-cols=1;       % Number of columns of cells in hexagonal grid
+rows=26;         %Number of rows of cells in hexagonal grid 30
+cols=1 ;         %Number of columns of cells in hexagonal grid 12
 
 %% Define simulation time and step size
-t0=0;         % Start time
-tf_hours=200; % Final time (hours)
+t0=0;            % Start time
+tf_hours=200;    % Final time (hours)
 
 %% Set up simulation inputs
 
@@ -35,32 +35,32 @@ CoupledCells=1;            %Simulate with Notch-Delta coupling = 1
 Boundary=0;                %0 = 'hard' boundary, 1 = periodic boundary (set to 1)
 TurnOffAutorepression=0;   %Reduce model to just lateral inhibition without autonomous Hes oscillators in each cell
 
-%Extended neighbour options
-VertProtrusions = 2; HorzProtrusions=VertProtrusions; %Increases number of signalling neighbours in the vertical direction 
-StrengthGrad    = 0;
-numDistalNeigh  = 4; % 4, 6, or 10
+%Extended neighbour options 
+VertProtrusions=2; HorzProtrusions=VertProtrusions; %Increases number of signalling neighbours in the vertical direction 
+StrengthGrad=0;
+numDistalNeigh=4;          % 4, 6, or 10
 
 %Differentiation options
-CrudeDiff            = 1;     %Cells will be marked...
-AvM                  = 0;     %Absolute vs moving mean threshold (0=Absolute thresh, 1=Moving mean thresh)
-diffSignallingMethod = 1;     %Determines what differentiation does to the system: 0=no change to system, 1=signalling changes in the cell above or below (randomly selected), 2= same as 1 but the cells selected are always the differentiating cell and the one below it, 3= replace diff cell with population mean, 4=local/neighbour mean replacement, 5=replace with random neighbour level,
-diffLengthHours      = 7;     %Time spent in altered coupling strength 
-S                    = 0.003;
+CrudeDiff            = 1;          %Cells will be marked...
+AvM                  = 0;          %Absolute vs moving mean threshold (0=Absolute thresh, 1=Moving mean thresh)
+diffSignallingMethod = 1;         %Determines what differentiation does to the system: 0=no change to system, 1=signalling changes in the cell above or below (randomly selected), 2= same as 1 but the cells selected are always the differentiating cell and the one below it, 3= replace diff cell with population mean, 4=local/neighbour mean replacement, 5=replace with random neighbour level,
+diffLengthHours      = 0;          %Time spent in altered coupling strength 
+S                    = 0.003;      %Probability of differentiation
 %% Set up parameter space size/repeats
 
-HH=3;   %Number of points to plot in parameter space - diffGamma (z-axis)
+HH=4;   %Number of points to plot in parameter space - diffLength (Z-axis)
 II=20;  %Number of points to plot in parameter space - Repression threshold (y-axis)
 JJ=20;  %Number of points to plot in parameter space - Distal signalling efficiency (x-axis)
 KK=20;  %Number of times to repeat a simulation per parameter point with random initial conditions
 
 if HH==1
-    hh_arr=3;                % diffGamma        
-else
-    hh_arr=linspace(1,3,HH); % diffGamma
+    hh_arr=0;                   % diffLength (h)
+else   
+    hh_arr = [0 30 60 100];     % diffLength (h)
 end
 
 ii_arr=linspace(1000,10000,II); %Repression threshold for NICD
-jj_arr=linspace(0,3,JJ);       %Distal signalling efficiency 
+jj_arr=linspace(0,3,JJ);        %Distal signalling efficiency 
 
 %% Model parameters
 % Columns in accepted_parameters: 1:a_m, 2:a_p, 3:P_H0, 4:TauH, 5:n_H
@@ -95,23 +95,22 @@ Pm=0.005; % Total probability of movement either left or right (max Pm value is 
 SwapThresh=1-Pm/2; % Treshold to be used in probability of swapping function within diffSolver.m
 Ts=5; % Time (in mins) between each swapping event (nominal Ts=5)   
 
-
 %% Differentiation selection and parameters
-wl_mins             = 100; %Window length in mins to take the moving mean from
-wl=wl_mins/dt;             %Window length converted to number of vector elements
+wl_mins             = 100;        % Window length in mins to take the moving mean from
+wl=wl_mins/dt;                    % Window length converted to number of vector elements
 diffLength=diffLengthHours*60/dt;
-DiffTime_hours=50;         %Time at which differention can start to occur (hours)
+DiffTime_hours=50;                % Time at which differention can start to occur (hours)
 DiffTime=DiffTime_hours*60/dt;
-nominalGamma=1; %Value of gamma when cells are not differentiating
+nominalGamma=1;                   % Value of gamma when cells are not differentiating
 lowerCoupling=1;
 
 %% Cell-movement/swapping parameters
-ImplementSwapping   = 0;   %Cells will randomly swap in the horizontal direction
-Pm=0.005; % Total probability of movement either left or right (max Pm value is 0.5)
+ImplementSwapping   = 0;  %Cells will randomly swap in the horizontal direction
+Pm=0.005;       % Total probability of movement either left or right (max Pm value is 0.5)
 SwapThresh=1-Pm/2; % Treshold to be used in probability of swapping function within diffSolver.m
-Ts=5; % Time (in mins) between each swapping event (nominal Ts=5)      
+Ts=5;              % Time (in mins) between each swapping event (nominal Ts=5)       
 
-%% Use object oriented variable to pass parameters to the processedOutput function  
+%% Use object oriented variable to pass parameters to the processedOutput function 
 p.hh_arr                = hh_arr; %differentiation gamma
 p.ii_arr                = ii_arr; %P_ND0
 p.jj_arr                = jj_arr; %VertProtrusionStrength
@@ -124,7 +123,7 @@ p.n_H                   = AP(s,5);
 p.u_m                   = log(2)/30;
 p.u_p                   = log(2)/90;
 p.n_ND                  = 3;
-p.TauND                 = 0;
+% p.TauND                 = hh_arr;
 
 p.VertProtrusions       = VertProtrusions;
 p.HorzProtrusions       = HorzProtrusions;
@@ -163,7 +162,8 @@ p.JJ                    = JJ;
 p.KK                    = KK;
 p.S                     = S;
 p.nominalGamma          = nominalGamma;
-p.paramSpaceOutput      = 1;
+p.diffGamma             = 3;
+p.paramSpaceOutput      = 2;
 
 %% Run Model
 [output]=processedOutput(p);
@@ -175,11 +175,9 @@ else
     str1="Grid, ";
 end
 
-str2 = sprintf("Stochastic = %.0f, diffSignallingMethod = %.f, Repeats = %.0f, S = %.4f, diffLength = %.1fh, HH = %.0f, II = %.0f, JJ = %.0f, numDistalNeigh = %.0f, TauND = %.0f, vertProtrusions = %.1f, turnOffAutorepression = %.0f.mat ", Stochastic, diffSignallingMethod, KK, S, diffLengthHours, HH, II, JJ, numDistalNeigh, p.TauND, VertProtrusions, TurnOffAutorepression);
+str2 = sprintf("Stochastic = %.0f, diffSignallingMethod = %.f, TauND exploration 0 30 60 100, Repeats = %.0f, S = %.4f, diffLength = %.1fh, HH = %.0f, II = %.0f, JJ = %.0f, numDistalNeigh = %.0f, vertProtrusions = %.1f, turnOffAutorepression = %.0f.mat", Stochastic, diffSignallingMethod, KK, S, diffLengthHours, HH, II, JJ, numDistalNeigh, VertProtrusions, TurnOffAutorepression);
 STR=append("ParamSpaceOutput - ",str1,str2);
 save(STR)
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                                Plots
@@ -209,6 +207,7 @@ elseif GraphAppearance==0
     set(0,'defaultLegendTextColor','k');        set(0,'defaultTextColor','k')
     BackgroundColour=[1 1 1];
 end
+
 load 'cmap.mat'
 
 
@@ -219,8 +218,6 @@ colbar=1;
 textSize=10;
 
 colourMap = magma(300);
-% colourMap = pmkmp(256,'LinearL');
-% colourMap = inferno(300);
 
 for hh=1:HH
     
@@ -230,7 +227,7 @@ for hh=1:HH
 
     subplot(3,HH,hh)
     surf(jj_arr,ii_arr,data);
-    title({sprintf('Spatial period | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Spatial period | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');   
     caxis([2 4])
@@ -248,11 +245,10 @@ for hh=1:HH
 
 
     data=squeeze(output.Occurrence(hh,:,:));
-
+    
     subplot(3,HH,hh+HH)
     surf(jj_arr,ii_arr,data);
-%     title({sprintf('n_{ND}= %.1f',hh_arr(hh)) ''});
-    title({sprintf('Occurrence | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Occurrence | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');    
     if hh==1
@@ -265,13 +261,13 @@ for hh=1:HH
     ax = gca;
     ax.YAxis.Exponent = 3;
 
-%_____________________________________________________________________
+%__________________________________________________________________________
 
     data=squeeze(output.Dc(hh,:,:));
 
     subplot(3,HH,hh+2*HH)
     surf(jj_arr,ii_arr,data);
-    title({sprintf('Dc | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Dc | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');  
     caxis([0 1])
@@ -307,22 +303,21 @@ for hh=1:HH
     pass=passPer+passOcc+passDc;
     pass(pass<3)=0;
     pass(pass==3)=1;
-   
+    
+    
     subplot(1,HH,hh)
     surf(jj_arr,ii_arr,squeeze(pass));
-    sgtitle(sprintf('Spatial Per > %.1f  |  Occurrence > %.1f  |  Dc > %.1f', PerLow, OccLow, DcLow))
-    title({sprintf('F_{pert} = %.1f', hh_arr(hh)) ''});
+    title({sprintf('Spatial Per > %.1f  |  Occurrence > %.1f  |  Dc > %.1f', PerLow, OccLow, DcLow) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');  
     colormap([BackgroundColour; 1.6*[0/256 95/256 0/256]])
     colormap([BackgroundColour; [220/256 60/256 60/256]])
-
     if hh==1
         ylabel({'Repression','threshold'});
     end
     axis square; view(0,90); set(gca,'fontsize',textSize);
     ax = gca;
-    ax.YAxis.Exponent = 3;   
+    ax.YAxis.Exponent = 3; 
 end
 
 figure(3)
@@ -330,6 +325,7 @@ clf
 set(gcf,'renderer','Painters') %For EPS file export
 colbar=1;
 textSize=12;
+
 for hh=1:HH
     
     figure(3)
@@ -338,14 +334,13 @@ for hh=1:HH
 
     subplot(2,HH,hh)
     surf(jj_arr,ii_arr,data);
-    title({sprintf('Mean low persistence (h) | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Mean low persistence (h) | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');   
-%     caxis([2 4])
     if hh==1
         ylabel({'Repression','threshold'});
     end
-    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,colourMap);
+    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
     if colbar==1
         colorbar
     end
@@ -353,15 +348,56 @@ for hh=1:HH
     data=squeeze(output.meanHi(hh,:,:));
     subplot(2,HH,hh+HH)
     surf(jj_arr,ii_arr,data);
-%     title({sprintf('n_{ND}= %.1f',hh_arr(hh)) ''});
-    title({sprintf('Mean high persistence (h) | F_{pert}= %.1f',hh_arr(hh)) ''});
+    title({sprintf('Mean high persistence (h) | Diff Signalling= %.1f',hh_arr(hh)) ''});
     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
     xlabel('Distal signalling efficiency');    
     if hh==1
         ylabel({'Repression','threshold'});
     end
-    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,colourMap);
+    axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
     if colbar==1
         colorbar
     end
 end
+
+%     figure(11)
+% 
+%     data=squeeze(output.diffRate(hh,:,:));
+% %         data=[data(1,:); data(1:end-1,:)];
+% %         data=[data(:,1), data(:,1:end-1)];
+% 
+%    
+%     surf(jj_arr,ii_arr,data);
+%     title({sprintf('Diff rate | Diff Signalling= %.1f',hh_arr(hh)) ''});
+%     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
+%     xlabel('Distal signalling efficiency');   
+% %     caxis([0 100])
+%     ylabel({'%/h'});
+% 
+%     axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
+%     if colbar==1
+%         colorbar
+%     end
+%     
+%     
+%     
+%     
+%     figure(12)
+% 
+%     data=squeeze(output.CoV(hh,:,:));
+% %         data=[data(1,:); data(1:end-1,:)];
+% %         data=[data(:,1), data(:,1:end-1)];
+% 
+%    
+%     surf(jj_arr,ii_arr,data);
+%     title({sprintf('Coefficient of variation | Diff Signalling= %.1f',hh_arr(hh)) ''});
+%     xlim([jj_arr(1) jj_arr(end)]); ylim([ii_arr(1) ii_arr(end)]);
+%     xlabel('Distal signalling efficiency');   
+% %     caxis([0 100])
+%     ylabel({'CoV'});
+% 
+%     axis square; view(0,90); set(gca,'fontsize',textSize); colormap(gca,parula);
+%     if colbar==1
+%         colorbar
+%     end
+
